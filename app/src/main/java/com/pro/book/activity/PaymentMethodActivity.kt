@@ -29,6 +29,7 @@ class PaymentMethodActivity : BaseActivity() {
         listPaymentMethodFromFirebase
     }
 
+    //
     private val dataIntent: Unit
         get() {
             val bundle = intent.extras ?: return

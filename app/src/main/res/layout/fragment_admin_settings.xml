@@ -39,35 +39,57 @@
         android:text="@string/manage_role"
         android:drawableTint="@color/textColorPrimary"
         android:textColor="@color/textColorPrimary"
-        android:drawableStart="@drawable/ic_sign_out"
+        android:drawableStart="@drawable/baseline_supervised_user_circle_24"
         android:drawablePadding="@dimen/define_dimen_10"
         android:textSize="@dimen/text_size_small" />
 
-    <TextView
-        android:id="@+id/tv_manage_revenue"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:paddingTop="@dimen/define_dimen_14"
-        android:paddingBottom="@dimen/define_dimen_14"
-        android:text="@string/manage_revenue"
-        android:drawableTint="@color/textColorPrimary"
-        android:textColor="@color/textColorPrimary"
-        android:drawableStart="@drawable/ic_sign_out"
-        android:drawablePadding="@dimen/define_dimen_10"
-        android:textSize="@dimen/text_size_small" />
+        android:paddingBottom="@dimen/define_dimen_14">
 
-    <TextView
-        android:id="@+id/tv_manage_top_product"
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_revenue"
+            android:foregroundTint="@color/textColorPrimary"
+            android:layout_marginEnd="@dimen/define_dimen_10" />
+
+        <TextView
+            android:id="@+id/tv_manage_revenue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/manage_revenue"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="@dimen/text_size_small" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:paddingTop="@dimen/define_dimen_14"
-        android:paddingBottom="@dimen/define_dimen_14"
-        android:text="@string/manage_top_product"
-        android:drawableTint="@color/textColorPrimary"
-        android:textColor="@color/textColorPrimary"
-        android:drawableStart="@drawable/ic_sign_out"
-        android:drawablePadding="@dimen/define_dimen_10"
-        android:textSize="@dimen/text_size_small" />
+        android:paddingBottom="@dimen/define_dimen_14">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bestseller"
+            android:tint="@color/textColorPrimary"
+            android:layout_marginEnd="@dimen/define_dimen_10" />
+
+        <TextView
+            android:id="@+id/tv_manage_top_product"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/manage_top_product"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="@dimen/text_size_small" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_manage_voucher"
@@ -78,7 +100,7 @@
         android:text="@string/manage_voucher"
         android:drawableTint="@color/textColorPrimary"
         android:textColor="@color/textColorPrimary"
-        android:drawableStart="@drawable/ic_sign_out"
+        android:drawableStart="@drawable/baseline_discount_24"
         android:drawablePadding="@dimen/define_dimen_10"
         android:textSize="@dimen/text_size_small" />
 
@@ -91,7 +113,7 @@
         android:text="@string/manage_feedback"
         android:drawableTint="@color/textColorPrimary"
         android:textColor="@color/textColorPrimary"
-        android:drawableStart="@drawable/ic_sign_out"
+        android:drawableStart="@drawable/baseline_announcement_24"
         android:drawablePadding="@dimen/define_dimen_10"
         android:textSize="@dimen/text_size_small" />
 
