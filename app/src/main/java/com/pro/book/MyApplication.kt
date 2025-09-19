@@ -1,5 +1,6 @@
 package com.pro.book
-
+import vn.zalopay.sdk.ZaloPaySDK
+import vn.zalopay.sdk.Environment
 import android.app.Application
 import android.content.Context
 import com.google.firebase.FirebaseApp
@@ -15,6 +16,9 @@ class MyApplication : Application() {
         FirebaseApp.initializeApp(this)
         mFirebaseDatabase = FirebaseDatabase.getInstance(FIREBASE_URL)
         DataStoreManager.init(applicationContext)
+        super.onCreate()
+        ZaloPaySDK.init(2553, Environment.SANDBOX)
+
     }
 
     val adminDatabaseReference: DatabaseReference
@@ -57,4 +61,5 @@ class MyApplication : Application() {
             return context.applicationContext as MyApplication
         }
     }
+
 }

@@ -28,6 +28,13 @@ import com.pro.book.utils.GlobalFunction.startActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import android.content.Intent
+import com.pro.book.payment.CreateOrderV1
+import org.json.JSONObject
+import vn.zalopay.sdk.ZaloPaySDK
+import vn.zalopay.sdk.listeners.PayOrderListener
+import vn.zalopay.sdk.ZaloPayError
+
 
 class CartActivity : BaseActivity() {
     private var rcvCart: RecyclerView? = null
@@ -122,7 +129,7 @@ class CartActivity : BaseActivity() {
         }
 
         tvCheckout!!.setOnClickListener {
-            if (listProductCart == null || listProductCart!!.isEmpty()) return@setOnClickListener
+            if (listProductCart.isNullOrEmpty()) return@setOnClickListener
             if (paymentMethodSelected == null) {
                 showToastMessage(getString(R.string.label_choose_payment_method))
                 return@setOnClickListener
@@ -131,34 +138,94 @@ class CartActivity : BaseActivity() {
                 showToastMessage(getString(R.string.label_choose_address))
                 return@setOnClickListener
             }
-            val orderBooking = Order()
-            orderBooking.id = System.currentTimeMillis()
-            orderBooking.userEmail = DataStoreManager.user?.email
-            orderBooking.dateTime = System.currentTimeMillis().toString()
-            val products: MutableList<ProductOrder> = ArrayList()
-            for (product in listProductCart!!) {
-                products.add(
-                    ProductOrder(
-                        product.id, product.name,
-                        product.description, product.count,
-                        product.priceOneProduct, product.image
-                    )
-                )
-            }
-            orderBooking.products = products
-            orderBooking.price = priceProduct
-            if (voucherSelected != null) {
-                orderBooking.voucher = voucherSelected!!.getPriceDiscount(priceProduct)
-            }
-            orderBooking.total = mAmount
-            orderBooking.paymentMethod = paymentMethodSelected!!.name
-            orderBooking.address = addressSelected
-            orderBooking.status = Order.STATUS_NEW
 
-            val bundle = Bundle()
-            bundle.putSerializable(Constant.ORDER_OBJECT, orderBooking)
-            startActivity(this@CartActivity, PaymentActivity::class.java, bundle)
+            val orderBooking = Order().apply {
+                id = System.currentTimeMillis()
+                userEmail = DataStoreManager.user?.email
+                dateTime = System.currentTimeMillis().toString()
+                products = listProductCart!!.map { p ->
+                    ProductOrder(p.id, p.name, p.description, p.count, p.priceOneProduct, p.image)
+                }.toMutableList()
+                price = priceProduct
+                if (voucherSelected != null) {
+                    voucher = voucherSelected!!.getPriceDiscount(priceProduct)
+                }
+                total = mAmount
+                paymentMethod = paymentMethodSelected!!.name
+                address = addressSelected
+                status = Order.STATUS_NEW
+            }
+
+            if (paymentMethodSelected!!.id != Constant.TYPE_ZALO_PAY) {
+                val bundle = Bundle().apply { putSerializable(Constant.ORDER_OBJECT, orderBooking) }
+                startActivity(this@CartActivity, PaymentActivity::class.java, bundle)
+                return@setOnClickListener
+            }
+
+            val amountVnd = mAmount*1000
+            showProgressDialog(true)
+            Thread {
+                try {
+                    val resp = CreateOrderV1().create(amountVnd)
+                    val returnCode = resp.optInt("returncode", resp.optInt("return_code", -1))
+                    if (returnCode == 1) {
+                        val token = resp.optString("zptranstoken", resp.optString("zp_trans_token", ""))
+                        runOnUiThread {
+                            showProgressDialog(false)
+                            if (token.isEmpty()) {
+                                showToastMessage("Không nhận được token từ ZaloPay")
+                                return@runOnUiThread
+                            }
+                            ZaloPaySDK.getInstance().payOrder(
+                                this@CartActivity,
+                                token,
+                                "merchant-deeplink://app", // TRÙNG Manifest
+                                object : vn.zalopay.sdk.listeners.PayOrderListener {
+                                    override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String) {
+                                        runOnUiThread {
+                                            showToastMessage("Thanh toán ZaloPay thành công")
+                                            val bundle = Bundle().apply {
+                                                putSerializable(Constant.ORDER_OBJECT, orderBooking)
+                                                putBoolean("PAID_BY_ZALOPAY", true)
+                                                putString("ZP_TRANS_TOKEN", transToken)
+                                                putString("ZP_TRANSACTION_ID", transactionId)
+                                            }
+//                                            startActivity(this@CartActivity, TrackingOrderActivity::class.java, bundle)
+//                                             finish()
+                                            val intent = Intent(this@CartActivity, TrackingOrderActivity::class.java)
+                                            intent.putExtras(bundle)
+                                            startActivity(intent)
+                                            finishAffinity()
+                                        }
+                                    }
+                                    override fun onPaymentCanceled(zpTransToken: String, appTransID: String) {
+                                        runOnUiThread { showToastMessage("Bạn đã huỷ thanh toán") }
+                                    }
+                                    override fun onPaymentError(err: vn.zalopay.sdk.ZaloPayError, zpTransToken: String, appTransID: String) {
+                                        runOnUiThread { showToastMessage("Lỗi ZaloPay: ${err.name}") }
+                                    }
+                                }
+                            )
+                        }
+                    } else {
+                        val message = resp.optString("returnmessage",
+                            resp.optString("sub_return_message",
+                                resp.optString("return_message", "Tạo đơn thất bại")))
+                        runOnUiThread {
+                            showProgressDialog(false)
+                            showToastMessage(message)
+                        }
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        showProgressDialog(false)
+                        showToastMessage("Lỗi tạo đơn: ${e.message}")
+                    }
+                }
+            }.start()
         }
+
+
     }
 
     private fun initData() {
@@ -269,4 +336,18 @@ class CartActivity : BaseActivity() {
             EventBus.getDefault().unregister(this)
         }
     }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        ZaloPaySDK.getInstance().onResult(intent)
+        // Check if payment was successful and navigate
+        val paidByZaloPay = intent.getBooleanExtra("PAID_BY_ZALOPAY", false)
+        if (paidByZaloPay) {
+            val bundle = intent.extras
+            val trackingIntent = Intent(this, TrackingOrderActivity::class.java)
+            trackingIntent.putExtras(bundle!!)
+            startActivity(trackingIntent)
+            finishAffinity()
+        }
+    }
+
 }

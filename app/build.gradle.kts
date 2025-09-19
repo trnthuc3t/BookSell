@@ -58,10 +58,17 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.room)
     implementation(libs.core.ktx)
+    implementation(fileTree(mapOf(
+        "dir" to "E:\\DOWNLOAD\\ZaloSDK",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     kapt(libs.room.compiler)
     implementation(libs.eventbus)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.squareup.okhttp3:okhttp:4.6.0")
+    implementation("commons-codec:commons-codec:1.14")
 }
