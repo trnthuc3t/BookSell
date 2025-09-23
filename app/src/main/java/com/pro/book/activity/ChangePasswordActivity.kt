@@ -110,19 +110,50 @@ class ChangePasswordActivity : BaseActivity() {
 
     private fun changePassword(newPassword: String) {
         showProgressDialog(true)
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        user.updatePassword(newPassword)
-            .addOnCompleteListener { task: Task<Void?> ->
-                showProgressDialog(false)
-                if (task.isSuccessful) {
-                    showToastMessage(getString(R.string.msg_change_password_successfully))
-                    val userLogin: User = DataStoreManager.user!!
-                    userLogin.password = newPassword
-                    DataStoreManager.user = userLogin
-                    edtOldPassword!!.setText("")
-                    edtNewPassword!!.setText("")
-                    edtConfirmPassword!!.setText("")
+
+        val user = FirebaseAuth.getInstance().currentUser
+        val oldPassword = edtOldPassword!!.text.toString().trim()
+
+        if (user == null || user.email.isNullOrEmpty()) {
+            showProgressDialog(false)
+            showToastMessage(getString(R.string.msg_change_password_failed))
+            return
+        }
+
+        // Tạo credential từ email + old password
+        val credential = com.google.firebase.auth.EmailAuthProvider
+            .getCredential(user.email!!, oldPassword)
+
+        // Bước 1: re-authenticate
+        user.reauthenticate(credential)
+            .addOnCompleteListener { reAuthTask ->
+                if (reAuthTask.isSuccessful) {
+                    // Bước 2: update password
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { updateTask ->
+                            showProgressDialog(false)
+                            if (updateTask.isSuccessful) {
+                                showToastMessage(getString(R.string.msg_change_password_successfully))
+
+                                // Cập nhật lại user trong DataStore
+                                val userLogin: User = DataStoreManager.user!!
+                                userLogin.password = newPassword
+                                DataStoreManager.user = userLogin
+
+                                // Xóa text cũ
+                                edtOldPassword!!.setText("")
+                                edtNewPassword!!.setText("")
+                                edtConfirmPassword!!.setText("")
+                            } else {
+                                showToastMessage(updateTask.exception?.localizedMessage
+                                    ?: getString(R.string.msg_change_password_failed))
+                            }
+                        }
+                } else {
+                    showProgressDialog(false)
+                    showToastMessage(getString(R.string.msg_old_password_invalid))
                 }
             }
     }
+
 }
