@@ -81,7 +81,7 @@
     <string name="msg_change_password_failed">Đổi mật khẩu thất bại</string>
     <string name="msg_change_password_successfully">Đổi mật khẩu thành công</string>
 
-
+    <string name="msg_email_not_verified">Vui lòng xác thực email trước khi đăng nhập</string>
     <string name="msg_reset_password_successfully">Lấy lại mật khẩu thành công, vui lòng kiểm tra email của bạn</string>
 
     <string name="msg_register_error">Đăng ký không thành công, vui lòng thử lại</string>

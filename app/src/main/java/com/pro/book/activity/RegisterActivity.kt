@@ -122,18 +122,35 @@ class RegisterActivity : BaseActivity() {
                 if (task.isSuccessful) {
                     val user = firebaseAuth.currentUser
                     if (user != null) {
-                        val userObject = User(user.email, password)
-                        if (user.email != null && user.email!!.contains(Constant.ADMIN_EMAIL_FORMAT)) {
-                            userObject.isAdmin = true
-                        }
-                        DataStoreManager.user = userObject
-                        goToMainActivity()
+                        // Gửi email xác thực
+                        user.sendEmailVerification()
+                            .addOnCompleteListener { verifyTask ->
+                                if (verifyTask.isSuccessful) {
+                                    Toast.makeText(
+                                        this,
+                                        "Chúng tôi đã gửi email xác thực đến ${user.email}. Vui lòng xác thực trước khi đăng nhập.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    // Quay lại màn hình Login
+                                    finish()
+                                } else {
+                                    showToastMessage("Gửi email xác thực thất bại: ${verifyTask.exception?.message}")
+                                }
+                            }
                     }
                 } else {
-                    showToastMessage(getString(R.string.msg_register_error))
+                    try {
+                        throw task.exception!!
+                    } catch (e: com.google.firebase.auth.FirebaseAuthUserCollisionException) {
+                        // Email đã tồn tại
+                        showToastMessage("Email này đã được đăng ký")
+                    } catch (e: Exception) {
+                        showToastMessage("Đăng ký thất bại: ${e.message}")
+                    }
                 }
             }
     }
+
 
     private fun goToMainActivity() {
         if (DataStoreManager.user!!.isAdmin) {

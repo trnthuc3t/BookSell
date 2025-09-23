@@ -129,6 +129,11 @@ class LoginActivity : BaseActivity() {
                 if (task.isSuccessful) {
                     val user = firebaseAuth.currentUser
                     if (user != null) {
+                        if (!user.isEmailVerified) {
+                            showToastMessage("Vui lòng xác thực email trước khi đăng nhập")
+                            return@addOnCompleteListener
+                        }
+
                         val userObject = User(user.email, password)
                         if (user.email != null && user.email!!.contains(Constant.ADMIN_EMAIL_FORMAT)) {
                             userObject.isAdmin = true
@@ -141,6 +146,8 @@ class LoginActivity : BaseActivity() {
                 }
             }
     }
+
+
 
     private fun goToMainActivity() {
         if (DataStoreManager.user!!.isAdmin) {
