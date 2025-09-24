@@ -68,13 +68,10 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         mView = inflater.inflate(R.layout.fragment_home, container, false)
-
         initUi()
         initListener()
-
         listProductBanner
         getListCategory()
-
         return mView
     }
 

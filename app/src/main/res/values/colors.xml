@@ -22,4 +22,10 @@
     <color name="blue">#3F51B5</color>
     <color name="black_overlay">#667C7474</color>
     <color name="dividerColor">#BDBDBD</color>
+
+    <color name="toast_info">#3455D1</color>
+    <color name="toast_success">#2E7D32</color>
+    <color name="toast_error">#D32F2F</color>
+    <color name="toast_warning">#F9A825</color>
+
 </resources>

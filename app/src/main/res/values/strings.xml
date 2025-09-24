@@ -29,6 +29,8 @@
     <string name="hint_password_confirm">Vui lòng xác nhận mật khẩu mới…</string>
     <string name="hint_optional">Không bắt buộc</string>
     <string name="hint_rating_review">Hãy cho chúng tôi biết đánh giá của bạn</string>
+    <string name="label_cancel_order">Hủy đơn hàng</string>
+
 
     <string name="admin">Quản trị viên</string>
     <string name="user">Người dùng</string>
@@ -67,6 +69,12 @@
     <string name="msg_email_invalid_user">Email người dùng sai định dạng</string>
     <string name="msg_email_admin_empty">Vui lòng nhập email</string>
     <string name="msg_password_admin_empty">Vui lòng nhập mật khẩu</string>
+
+
+<!--    validation-->
+    <string name="msg_login_wrong_credentials">Sai mật khẩu hoặc Gmail. Vui lòng thử lại.</string>
+    <string name="msg_login_error_general">Đăng nhập thất bại. Vui lòng thử lại sau.</string>
+    <string name="msg_network_error">Không có kết nối mạng. Vui lòng kiểm tra lại.</string>
 
     <string name="label_user_name">Email</string>
     <string name="label_old_password">Mật khẩu cũ</string>
