@@ -71,4 +71,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.squareup.okhttp3:okhttp:4.6.0")
     implementation("commons-codec:commons-codec:1.14")
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+
+    // Coroutines (nếu chưa có)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

@@ -218,4 +218,8 @@
     <string name="msg_email_products">Danh sách sản phẩm đặt mua:</string>
     <string name="msg_email_total">Tổng tiền:</string>
     <string name="msg_email_payment_method">Phương thức thanh toán:</string>
+
+    <string name="chat_assistant">Trợ lý AI</string>
+    <string name="type_message">Nhập tin nhắn...</string>
+    <string name="send">Gửi</string>
 </resources>
