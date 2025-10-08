@@ -23,6 +23,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.pro.book.MyApplication.Companion.get
 import com.pro.book.R
+import com.pro.book.activity.ChatActivity
 import com.pro.book.activity.ProductDetailActivity
 import com.pro.book.adapter.BannerViewPagerAdapter
 import com.pro.book.adapter.CategoryPagerAdapter
@@ -44,6 +45,7 @@ class HomeFragment : Fragment() {
     private var tabCategory: TabLayout? = null
     private var edtSearchName: EditText? = null
     private var imgSearch: ImageView? = null
+    private var imgChat: ImageView? = null
 
     private var listProductFeatured: MutableList<Product>? = null
     private var listCategory: MutableList<Category>? = null
@@ -86,6 +88,7 @@ class HomeFragment : Fragment() {
         tabCategory = mView!!.findViewById(R.id.tab_category)
         edtSearchName = mView!!.findViewById(R.id.edt_search_name)
         imgSearch = mView!!.findViewById(R.id.img_search)
+        imgChat= mView!!.findViewById(R.id.img_chat)
     }
 
     private fun initListener() {
@@ -103,6 +106,10 @@ class HomeFragment : Fragment() {
         })
 
         imgSearch!!.setOnClickListener { searchProduct() }
+
+        imgChat!!.setOnClickListener {
+            startActivity(requireActivity(), ChatActivity::class.java)
+        }
 
         edtSearchName!!.setOnEditorActionListener { _: TextView?, actionId: Int, _: KeyEvent? ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {

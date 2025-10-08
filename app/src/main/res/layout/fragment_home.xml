@@ -13,36 +13,45 @@
         android:padding="@dimen/define_dimen_10"
         android:orientation="vertical">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:background="@drawable/bg_white_corner_16_border_gray"
-            android:padding="@dimen/define_dimen_4">
+            android:padding="@dimen/define_dimen_4"
+            android:gravity="center_vertical"
+            >
 
             <EditText
                 android:id="@+id/edt_search_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/img_search"
-                android:background="@color/white"
-                android:hint="@string/hint_home_search"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:padding="@dimen/define_dimen_5"
-                android:textColor="@color/textColorHeading"
-                android:textColorHint="@color/textColorAccent"
-                android:textSize="@dimen/text_size_small" />
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_white_corner_16_border_gray"
+                android:hint="Tìm kiếm sản phẩm..."
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="15sp" />
 
             <ImageView
                 android:id="@+id/img_search"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:padding="@dimen/define_dimen_10"
-                android:src="@drawable/ic_search" />
-        </RelativeLayout>
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_search"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <!-- Icon Chat mới thêm -->
+            <ImageView
+                android:id="@+id/img_chat"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_chat"
+                android:padding="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+        </LinearLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
