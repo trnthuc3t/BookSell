@@ -82,7 +82,7 @@ class ChatActivity : BaseActivity() {
         // Thay YOUR_API_KEY bằng API key thực của bạn
         generativeModel = GenerativeModel(
             modelName = "gemini-pro",
-            apiKey = "AIzaSyDczK3IFO1d9AZ4oHWkopkqA9VzXPh00-w"
+            apiKey = ""
         )
     }
 
