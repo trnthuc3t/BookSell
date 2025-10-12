@@ -8,8 +8,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -25,6 +23,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 class ChatActivity : BaseActivity() {
     private var rcvChat: RecyclerView? = null
@@ -35,14 +40,19 @@ class ChatActivity : BaseActivity() {
     private var chatAdapter: ChatAdapter? = null
     private val messages = mutableListOf<Message>()
 
-    private lateinit var generativeModel: GenerativeModel
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+
+//    ApiKey Gemni
+    private val apiKey = ""
+
     private var productData = StringBuilder()
     private var categoryData = StringBuilder()
     private var orderData = StringBuilder()
     private var userData = StringBuilder()
-
-    // Lưu lịch sử chat để AI có context
-    private val chatHistory = mutableListOf<com.google.ai.client.generativeai.type.Content>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,11 +60,9 @@ class ChatActivity : BaseActivity() {
 
         initToolbar()
         initUi()
-        initGemini()
         loadAllData()
         initListener()
 
-        // Thêm tin nhắn chào mừng
         addBotMessage("Xin chào ${DataStoreManager.user?.email}! 👋\n\nTôi là trợ lý ảo của cửa hàng sách. Tôi có thể giúp bạn:\n\n📚 Tìm kiếm và tư vấn sản phẩm\n📦 Kiểm tra đơn hàng\n💰 Xem khuyến mãi\n❓ Trả lời các câu hỏi\n\nBạn cần giúp gì không?")
     }
 
@@ -78,14 +86,6 @@ class ChatActivity : BaseActivity() {
         rcvChat?.adapter = chatAdapter
     }
 
-    private fun initGemini() {
-        // Thay YOUR_API_KEY bằng API key thực của bạn
-        generativeModel = GenerativeModel(
-            modelName = "gemini-pro",
-            apiKey = ""
-        )
-    }
-
     private fun loadAllData() {
         showProgressDialog(true)
         var loadedCount = 0
@@ -96,20 +96,22 @@ class ChatActivity : BaseActivity() {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     productData.clear()
-                    productData.append("=== DANH SÁCH SẢN PHẨM ===\n\n")
+                    productData.append("=== SẢN PHẨM ===\n\n")
 
+                    var count = 0
                     for (dataSnapshot in snapshot.children) {
+                        if (count >= 15) break
+
                         val product = dataSnapshot.getValue(Product::class.java)
                         product?.let {
-                            productData.append("📖 ${it.name}\n")
-                            productData.append("   Mô tả: ${it.description}\n")
-                            productData.append("   Giá: ${it.realPrice}.000vnd\n")
-                            productData.append("   Danh mục: ${it.category_name}\n")
+                            productData.append("${count + 1}. ${it.name}\n")
+                            productData.append("   Giá: ${it.realPrice}k")
                             if (it.sale > 0) {
-                                productData.append("   🔥 Khuyến mãi: ${it.sale}%\n")
+                                productData.append(" (Giảm ${it.sale}%)")
                             }
-                            productData.append("   Đánh giá: ${it.rate}⭐ (${it.countReviews} reviews)\n")
                             productData.append("\n")
+                            productData.append("   Danh mục: ${it.category_name}\n\n")
+                            count++
                         }
                     }
 
@@ -128,12 +130,12 @@ class ChatActivity : BaseActivity() {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     categoryData.clear()
-                    categoryData.append("=== DANH MỤC SẢN PHẨM ===\n\n")
+                    categoryData.append("=== DANH MỤC ===\n")
 
                     for (dataSnapshot in snapshot.children) {
                         val category = dataSnapshot.getValue(Category::class.java)
                         category?.let {
-                            categoryData.append("📂 ${it.name}\n")
+                            categoryData.append("- ${it.name}\n")
                         }
                     }
                     categoryData.append("\n")
@@ -148,25 +150,28 @@ class ChatActivity : BaseActivity() {
                 }
             })
 
-        // Load user's orders
+        // Load orders
         get(this).orderDatabaseReference
             .orderByChild("userEmail")
             .equalTo(DataStoreManager.user?.email)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     orderData.clear()
-                    orderData.append("=== ĐơN HÀNG CỦA KHÁCH ===\n\n")
+                    orderData.append("=== ĐƠN HÀNG ===\n\n")
 
+                    var count = 0
                     for (dataSnapshot in snapshot.children) {
                         val order = dataSnapshot.getValue(Order::class.java)
                         order?.let {
-                            orderData.append("🛒 Đơn hàng #${it.id}\n")
-                            orderData.append("   Ngày: ${it.dateTime}\n")
-                            orderData.append("   Tổng tiền: ${it.total}.000vnd\n")
-                            orderData.append("   Trạng thái: ${getOrderStatus(it.status)}\n")
-                            orderData.append("   Sản phẩm: ${it.listProductsName}\n")
-                            orderData.append("\n")
+                            orderData.append("Đơn #${it.id}\n")
+                            orderData.append("- Tổng: ${it.total}k\n")
+                            orderData.append("- Trạng thái: ${getOrderStatus(it.status)}\n\n")
+                            count++
                         }
+                    }
+
+                    if (count == 0) {
+                        orderData.append("Chưa có đơn hàng.\n")
                     }
 
                     loadedCount++
@@ -179,11 +184,9 @@ class ChatActivity : BaseActivity() {
                 }
             })
 
-        // Load user info
+        // User info
         userData.clear()
-        userData.append("=== THÔNG TIN KHÁCH HÀNG ===\n\n")
-        userData.append("Email: ${DataStoreManager.user?.email}\n")
-        userData.append("\n")
+        userData.append("Khách: ${DataStoreManager.user?.email}\n\n")
 
         loadedCount++
         if (loadedCount == totalLoads) showProgressDialog(false)
@@ -191,11 +194,11 @@ class ChatActivity : BaseActivity() {
 
     private fun getOrderStatus(status: Int): String {
         return when (status) {
-            Order.STATUS_NEW -> "Đơn mới"
+            Order.STATUS_NEW -> "Mới"
             Order.STATUS_DOING -> "Đang xử lý"
             Order.STATUS_ARRIVED -> "Đã giao"
             Order.STATUS_COMPLETE -> "Hoàn thành"
-            else -> "Không xác định"
+            else -> "Không rõ"
         }
     }
 
@@ -209,45 +212,46 @@ class ChatActivity : BaseActivity() {
     }
 
     private fun sendMessage(message: String) {
-        // Thêm tin nhắn của user
         addUserMessage(message)
         edtMessage?.setText("")
 
-        // Hiển thị loading
         progressBar?.visibility = View.VISIBLE
         imgSend?.isEnabled = false
 
-        // Gọi Gemini API với chat history
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Thêm tin nhắn user vào history
-                chatHistory.add(
-                    content(role = "user") {
-                        text(message)
-                    }
-                )
-
-                val prompt = buildSystemPrompt() + "\n\nCâu hỏi: $message"
-
-                val response = generativeModel.generateContent(prompt)
-                val botReply = response.text ?: "Xin lỗi, tôi không thể trả lời câu hỏi này."
-
-                // Thêm câu trả lời bot vào history
-                chatHistory.add(
-                    content(role = "model") {
-                        text(botReply)
-                    }
-                )
+                val prompt = buildPrompt(message)
+                val response = callGeminiAPI(prompt)
 
                 withContext(Dispatchers.Main) {
-                    addBotMessage(botReply)
+                    addBotMessage(response)
                     progressBar?.visibility = View.GONE
                     imgSend?.isEnabled = true
                 }
+
             } catch (e: Exception) {
                 e.printStackTrace()
+
                 withContext(Dispatchers.Main) {
-                    addBotMessage("Xin lỗi, đã có lỗi xảy ra: ${e.message}. Vui lòng thử lại.")
+                    val errorMsg = when {
+                        e.message?.contains("API key") == true -> {
+                            "❌ API key không hợp lệ.\n\nVui lòng lấy key mới tại:\nhttps://aistudio.google.com/app/apikey"
+                        }
+                        e.message?.contains("403") == true -> {
+                            "🔒 API key không có quyền.\n\nVui lòng enable Gemini API trong project."
+                        }
+                        e.message?.contains("429") == true -> {
+                            "⏰ Vượt giới hạn (60/phút).\n\nVui lòng đợi 1 phút."
+                        }
+                        e.message?.contains("timeout") == true -> {
+                            "⏱️ Request timeout.\n\nVui lòng thử lại."
+                        }
+                        else -> {
+                            "⚠️ Lỗi: ${e.message}\n\nVui lòng thử lại."
+                        }
+                    }
+
+                    addBotMessage(errorMsg)
                     progressBar?.visibility = View.GONE
                     imgSend?.isEnabled = true
                 }
@@ -255,41 +259,77 @@ class ChatActivity : BaseActivity() {
         }
     }
 
-    private fun buildSystemPrompt(): String {
+    private fun callGeminiAPI(prompt: String): String {
+        // URL mới với API version v1 (không phải v1beta)
+        val url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=$apiKey"
+
+        // Tạo JSON request
+        val jsonRequest = JSONObject().apply {
+            put("contents", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("parts", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("text", prompt)
+                        })
+                    })
+                })
+            })
+            put("generationConfig", JSONObject().apply {
+                put("temperature", 0.7)
+                put("topK", 40)
+                put("topP", 0.95)
+                put("maxOutputTokens", 1024)
+            })
+        }
+
+        val requestBody = jsonRequest.toString()
+            .toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .post(requestBody)
+            .build()
+
+        val response = client.newCall(request).execute()
+        val responseBody = response.body?.string()
+
+        if (!response.isSuccessful) {
+            throw Exception("API Error ${response.code}: $responseBody")
+        }
+
+        // Parse response
+        val jsonResponse = JSONObject(responseBody ?: "")
+        val candidates = jsonResponse.optJSONArray("candidates")
+
+        if (candidates != null && candidates.length() > 0) {
+            val content = candidates.getJSONObject(0)
+                .getJSONObject("content")
+            val parts = content.getJSONArray("parts")
+
+            if (parts.length() > 0) {
+                return parts.getJSONObject(0).getString("text")
+            }
+        }
+
+        return "Xin lỗi, tôi không thể trả lời câu hỏi này."
+    }
+
+    private fun buildPrompt(userMessage: String): String {
         return """
-Bạn là trợ lý ảo thông minh của cửa hàng sách trực tuyến. Nhiệm vụ của bạn là hỗ trợ khách hàng một cách chuyên nghiệp, thân thiện và hữu ích.
+Bạn là trợ lý cửa hàng sách. Trả lời ngắn gọn, thân thiện bằng tiếng Việt.
 
 $userData
-
 $categoryData
-
 $productData
-
 $orderData
 
-HƯỚNG DẪN TRẢ LỜI:
-1. Luôn trả lời bằng tiếng Việt
-2. Thân thiện, lịch sự và chuyên nghiệp
-3. Sử dụng emoji phù hợp để tạo sự thân thiện 😊
-4. Khi được hỏi về sản phẩm:
-   - Đề xuất sản phẩm phù hợp dựa trên nhu cầu
-   - Nêu rõ giá, khuyến mãi, đánh giá
-   - So sánh các sản phẩm nếu khách yêu cầu
-5. Khi được hỏi về đơn hàng:
-   - Cung cấp thông tin chi tiết về trạng thái đơn
-   - Giải thích quy trình giao hàng
-6. Nếu không có thông tin trong dữ liệu:
-   - Thừa nhận lịch sự
-   - Đề xuất các sản phẩm/dịch vụ liên quan
-7. Trả lời ngắn gọn, dễ hiểu, có cấu trúc rõ ràng
-8. Chủ động hỏi thêm để hiểu rõ nhu cầu khách hàng
-9. Luôn kết thúc bằng câu hỏi/gợi ý để tiếp tục cuộc trò chuyện
+HƯỚNG DẪN:
+- Trả lời ngắn gọn, tối đa 3-4 câu
+- Dùng emoji phù hợp
+- Ưu tiên sản phẩm giảm giá
+- Nếu không rõ, gợi ý sản phẩm khác
 
-LƯU Ý ĐẶC BIỆT:
-- Không bịa đặt thông tin không có trong dữ liệu
-- Ưu tiên sản phẩm đang có khuyến mãi
-- Giới thiệu sản phẩm có đánh giá cao
-- Hỗ trợ khách tìm sản phẩm phù hợp với ngân sách
+Câu hỏi: $userMessage
         """.trimIndent()
     }
 
@@ -307,7 +347,9 @@ LƯU Ý ĐẶC BIỆT:
 
     private fun scrollToBottom() {
         rcvChat?.postDelayed({
-            rcvChat?.scrollToPosition(messages.size - 1)
+            if (messages.isNotEmpty()) {
+                rcvChat?.scrollToPosition(messages.size - 1)
+            }
         }, 100)
     }
 }

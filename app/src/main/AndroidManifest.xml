@@ -74,14 +74,14 @@
         <activity
             android:name="com.pro.book.activity.CartActivity"
             android:label="Merchant Demo"
-            android:launchMode="standard"
+            android:launchMode="singleTask"
             android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="demozpdk" android:host="app"/>
+                <data android:scheme="bookstore" android:host="app"/>
             </intent-filter>
         </activity>
 

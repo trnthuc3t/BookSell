@@ -1,6 +1,6 @@
-# Video Demo:
+## Video Demo:
 https://www.youtube.com/watch?v=za6NSq40CMI
-# Download Apk tại đây:
+## Download Apk tại đây:
 https://drive.google.com/drive/folders/15wA8xk61Re6LOj5KF013FvTt66XN3ycT?fbclid=IwAR3gnSlu3uWmpqdXzAIs9NvRHhlKc5LShmxU3M_1uncROoj9ELF_CTnuscM
 ## Key Features
 
@@ -30,3 +30,12 @@ https://drive.google.com/drive/folders/15wA8xk61Re6LOj5KF013FvTt66XN3ycT?fbclid=
 - **Authentication:** Firebase Authentication for user account management
 - **Android:** Shared Preferences (user login state), EventBus (event handling), TabLayout, ViewPager2, Fragments, BottomNavigationView, CircleIndicator3, RecyclerView in NestedScrollView
 - **Image Handling:** Glide Library for loading images from URLs
+
+## How to set up dependencies
+- add apiKey gemini in ChatActivity.kt
+- check dependencies in build.gradle (Module: app)
+```
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("commons-codec:commons-codec:1.14")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    ```
