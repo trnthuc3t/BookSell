@@ -8,6 +8,8 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.pro.book.prefs.DataStoreManager
 
+import com.pro.book.payment.ZpV1Demo
+
 class MyApplication : Application() {
     private lateinit var mFirebaseDatabase: FirebaseDatabase
 
@@ -17,7 +19,7 @@ class MyApplication : Application() {
         mFirebaseDatabase = FirebaseDatabase.getInstance(FIREBASE_URL)
         DataStoreManager.init(applicationContext)
         super.onCreate()
-        ZaloPaySDK.init(2553, Environment.SANDBOX)
+        ZaloPaySDK.init(ZpV1Demo.APP_ID, Environment.SANDBOX)
 
     }
 

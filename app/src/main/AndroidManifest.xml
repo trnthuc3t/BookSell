@@ -66,7 +66,9 @@
         <activity
             android:exported="false"
             android:name="com.pro.book.activity.RatingReviewActivity" />
-
+        <activity
+            android:exported="false"
+            android:name="com.pro.book.activity.PaymentSuccessActivity" />
         <activity
             android:exported="false"
             android:name="com.pro.book.activity.PaymentMethodActivity" />
@@ -81,7 +83,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="bookstore" android:host="app"/>
+                <data android:scheme="merchant-deeplink" android:host="app"/>
             </intent-filter>
         </activity>
 

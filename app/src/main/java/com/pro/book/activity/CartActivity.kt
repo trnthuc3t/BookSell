@@ -30,10 +30,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import android.content.Intent
 import com.pro.book.payment.CreateOrderV1
-import org.json.JSONObject
 import vn.zalopay.sdk.ZaloPaySDK
 import vn.zalopay.sdk.listeners.PayOrderListener
-import vn.zalopay.sdk.ZaloPayError
 
 
 class CartActivity : BaseActivity() {
@@ -179,29 +177,52 @@ class CartActivity : BaseActivity() {
                             ZaloPaySDK.getInstance().payOrder(
                                 this@CartActivity,
                                 token,
-                                "merchant-deeplink://app", // TRÙNG Manifest
-                                object : vn.zalopay.sdk.listeners.PayOrderListener {
-                                    override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String) {
+//                                "merchant-deeplink://app", // TRÙNG Manifest
+//                                object : vn.zalopay.sdk.listeners.PayOrderListener {
+//                                    override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String) {
+                                "merchant-deeplink://app", // must match scheme in AndroidManifest
+                                object : PayOrderListener {
+                                    override fun onPaymentSucceeded(
+                                        transactionId: String,
+                                        transToken: String,
+                                        appTransID: String
+                                    ) {
                                         runOnUiThread {
                                             showToastMessage("Thanh toán ZaloPay thành công")
-                                            val bundle = Bundle().apply {
-                                                putSerializable(Constant.ORDER_OBJECT, orderBooking)
-                                                putBoolean("PAID_BY_ZALOPAY", true)
-                                                putString("ZP_TRANS_TOKEN", transToken)
-                                                putString("ZP_TRANSACTION_ID", transactionId)
+//                                            val bundle = Bundle().apply {
+//                                                putSerializable(Constant.ORDER_OBJECT, orderBooking)
+//                                                putBoolean("PAID_BY_ZALOPAY", true)
+//                                                putString("ZP_TRANS_TOKEN", transToken)
+//                                                putString("ZP_TRANSACTION_ID", transactionId)
+                                            val successIntent = Intent(
+                                                this@CartActivity,
+                                                PaymentSuccessActivity::class.java
+                                            ).apply {
+                                                putExtra(Constant.ORDER_OBJECT, orderBooking)
+                                                putExtra(
+                                                    PaymentSuccessActivity.EXTRA_TRANSACTION_ID,
+                                                    transactionId
+                                                )
                                             }
 //                                            startActivity(this@CartActivity, TrackingOrderActivity::class.java, bundle)
 //                                             finish()
-                                            val intent = Intent(this@CartActivity, TrackingOrderActivity::class.java)
-                                            intent.putExtras(bundle)
-                                            startActivity(intent)
-                                            finishAffinity()
+//                                            val intent = Intent(this@CartActivity, TrackingOrderActivity::class.java)
+//                                            intent.putExtras(bundle)
+//                                            startActivity(intent)
+//                                            finishAffinity()
+                                            startActivity(successIntent)
+                                            finish()
                                         }
                                     }
                                     override fun onPaymentCanceled(zpTransToken: String, appTransID: String) {
                                         runOnUiThread { showToastMessage("Bạn đã huỷ thanh toán") }
                                     }
-                                    override fun onPaymentError(err: vn.zalopay.sdk.ZaloPayError, zpTransToken: String, appTransID: String) {
+                                    //    override fun onPaymentError(err: vn.zalopay.sdk.ZaloPayError, zpTransToken: String, appTransID: String) {
+                                    override fun onPaymentError(
+                                        err: vn.zalopay.sdk.ZaloPayError,
+                                        zpTransToken: String,
+                                        appTransID: String
+                                    ) {
                                         runOnUiThread { showToastMessage("Lỗi ZaloPay: ${err.name}") }
                                     }
                                 }
@@ -340,14 +361,14 @@ class CartActivity : BaseActivity() {
         super.onNewIntent(intent)
         ZaloPaySDK.getInstance().onResult(intent)
         // Check if payment was successful and navigate
-        val paidByZaloPay = intent.getBooleanExtra("PAID_BY_ZALOPAY", false)
-        if (paidByZaloPay) {
-            val bundle = intent.extras
-            val trackingIntent = Intent(this, TrackingOrderActivity::class.java)
-            trackingIntent.putExtras(bundle!!)
-            startActivity(trackingIntent)
-            finishAffinity()
-        }
+//        val paidByZaloPay = intent.getBooleanExtra("PAID_BY_ZALOPAY", false)
+//        if (paidByZaloPay) {
+//            val bundle = intent.extras
+//            val trackingIntent = Intent(this, TrackingOrderActivity::class.java)
+//            trackingIntent.putExtras(bundle!!)
+//            startActivity(trackingIntent)
+//            finishAffinity()
+//        }
     }
 
 }

@@ -46,8 +46,8 @@ class ChatActivity : BaseActivity() {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-//    ApiKey Gemni
-    private val apiKey = ""
+
+    private val geminiApiKey = "AIzaSyBe01R52kwQfKKQ-Csp07P6GIZBfsLtWg0"
 
     private var productData = StringBuilder()
     private var categoryData = StringBuilder()
@@ -110,7 +110,8 @@ class ChatActivity : BaseActivity() {
                                 productData.append(" (Giảm ${it.sale}%)")
                             }
                             productData.append("\n")
-                            productData.append("   Danh mục: ${it.category_name}\n\n")
+                            productData.append("   Danh mục: ${it.category_name}\n")
+                            productData.append("   Đánh giá: ${it.rate}⭐\n\n")
                             count++
                         }
                     }
@@ -150,7 +151,6 @@ class ChatActivity : BaseActivity() {
                 }
             })
 
-        // Load orders
         get(this).orderDatabaseReference
             .orderByChild("userEmail")
             .equalTo(DataStoreManager.user?.email)
@@ -186,7 +186,7 @@ class ChatActivity : BaseActivity() {
 
         // User info
         userData.clear()
-        userData.append("Khách: ${DataStoreManager.user?.email}\n\n")
+        userData.append("Khách hàng: ${DataStoreManager.user?.email}\n\n")
 
         loadedCount++
         if (loadedCount == totalLoads) showProgressDialog(false)
@@ -220,8 +220,7 @@ class ChatActivity : BaseActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val prompt = buildPrompt(message)
-                val response = callGeminiAPI(prompt)
+                val response = callGeminiAPI(message)
 
                 withContext(Dispatchers.Main) {
                     addBotMessage(response)
@@ -234,20 +233,27 @@ class ChatActivity : BaseActivity() {
 
                 withContext(Dispatchers.Main) {
                     val errorMsg = when {
-                        e.message?.contains("API key") == true -> {
-                            "❌ API key không hợp lệ.\n\nVui lòng lấy key mới tại:\nhttps://aistudio.google.com/app/apikey"
+                        e.message?.contains("API_KEY_INVALID") == true ||
+                                e.message?.contains("API key not valid") == true ||
+                                e.message?.contains("400") == true -> {
+                            "❌ API key không hợp lệ!\n\nVui lòng:\n1. Vào https://aistudio.google.com/app/apikey\n2. Tạo key mới\n3. Paste vào ChatActivity.kt (dòng 35)"
                         }
-                        e.message?.contains("403") == true -> {
-                            "🔒 API key không có quyền.\n\nVui lòng enable Gemini API trong project."
+                        e.message?.contains("RESOURCE_EXHAUSTED") == true ||
+                                e.message?.contains("429") == true -> {
+                            "⏰ Vượt giới hạn 60 requests/phút.\n\nĐợi 1 phút nhé!"
                         }
-                        e.message?.contains("429") == true -> {
-                            "⏰ Vượt giới hạn (60/phút).\n\nVui lòng đợi 1 phút."
+                        e.message?.contains("PERMISSION_DENIED") == true ||
+                                e.message?.contains("403") == true -> {
+                            "🔒 API key không có quyền.\n\nEnable Generative Language API trong Google Cloud Console."
                         }
                         e.message?.contains("timeout") == true -> {
-                            "⏱️ Request timeout.\n\nVui lòng thử lại."
+                            "⏱️ Timeout. Thử lại nhé!"
+                        }
+                        e.message?.contains("Unable to resolve host") == true -> {
+                            "📡 Không có mạng. Kiểm tra WiFi/Data!"
                         }
                         else -> {
-                            "⚠️ Lỗi: ${e.message}\n\nVui lòng thử lại."
+                            "⚠️ Lỗi: ${e.message}\n\nThử lại nhé!"
                         }
                     }
 
@@ -259,11 +265,13 @@ class ChatActivity : BaseActivity() {
         }
     }
 
-    private fun callGeminiAPI(prompt: String): String {
-        // URL mới với API version v1 (không phải v1beta)
-        val url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=$apiKey"
+    private fun callGeminiAPI(userMessage: String): String {
 
-        // Tạo JSON request
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+
+        val prompt = buildPrompt(userMessage)
+
+        // Body giống Postman
         val jsonRequest = JSONObject().apply {
             put("contents", JSONArray().apply {
                 put(JSONObject().apply {
@@ -274,19 +282,16 @@ class ChatActivity : BaseActivity() {
                     })
                 })
             })
-            put("generationConfig", JSONObject().apply {
-                put("temperature", 0.7)
-                put("topK", 40)
-                put("topP", 0.95)
-                put("maxOutputTokens", 1024)
-            })
         }
 
         val requestBody = jsonRequest.toString()
             .toRequestBody("application/json".toMediaType())
 
+        // Quan trọng: Dùng header x-goog-api-key thay vì query parameter
         val request = Request.Builder()
             .url(url)
+            .addHeader("x-goog-api-key", geminiApiKey)  // ← Theo hướng dẫn Google
+            .addHeader("Content-Type", "application/json")
             .post(requestBody)
             .build()
 
@@ -316,7 +321,8 @@ class ChatActivity : BaseActivity() {
 
     private fun buildPrompt(userMessage: String): String {
         return """
-Bạn là trợ lý cửa hàng sách. Trả lời ngắn gọn, thân thiện bằng tiếng Việt.
+Bạn là trợ lý ảo thông minh của cửa hàng sách trực tuyến.
+Trả lời bằng tiếng Việt, ngắn gọn (2-3 câu), thân thiện.
 
 $userData
 $categoryData
@@ -324,10 +330,11 @@ $productData
 $orderData
 
 HƯỚNG DẪN:
-- Trả lời ngắn gọn, tối đa 3-4 câu
-- Dùng emoji phù hợp
-- Ưu tiên sản phẩm giảm giá
-- Nếu không rõ, gợi ý sản phẩm khác
+- Trả lời ngắn gọn, dễ hiểu
+- Dùng emoji phù hợp 😊
+- Ưu tiên sản phẩm có khuyến mãi
+- Gợi ý sản phẩm phù hợp với nhu cầu
+- Nếu không có thông tin, thừa nhận lịch sự
 
 Câu hỏi: $userMessage
         """.trimIndent()
