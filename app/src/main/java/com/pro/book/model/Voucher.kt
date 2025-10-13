@@ -7,6 +7,10 @@ class Voucher : Serializable {
     @JvmField
     var id: Long = 0
     @JvmField
+    var name: String? = null
+    @JvmField
+    var description: String? = null
+    @JvmField
     var discount: Int = 0
     @JvmField
     var minimum: Int = 0
