@@ -32,6 +32,8 @@ https://drive.google.com/drive/folders/15wA8xk61Re6LOj5KF013FvTt66XN3ycT?fbclid=
 - **Image Handling:** Glide Library for loading images from URLs
 
 ## How to set up dependencies
+- Download zalopay sdk: https://developer.zalopay.vn/downloads/zpdk/zpdk-release-v3.1.aar
+- import file .aar into android studio
 - add apiKey gemini in ChatActivity.kt
 - check dependencies in build.gradle (Module: app)
 ```
