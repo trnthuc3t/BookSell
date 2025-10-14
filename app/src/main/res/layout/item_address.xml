@@ -4,9 +4,9 @@
     android:id="@+id/layout_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/white"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:background="@color/white"
     tools:ignore="UseCompoundDrawables, ContentDescription">
 
     <RelativeLayout
@@ -17,9 +17,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/define_dimen_10"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/img_status"
+            android:layout_marginEnd="@dimen/define_dimen_10"
+            android:layout_toStartOf="@+id/img_edit"
             android:orientation="vertical">
 
             <LinearLayout
@@ -27,16 +27,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="@dimen/define_dimen_80"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/define_dimen_10"
-                    android:text="@string/full_name"
-                    android:textColor="@color/textColorSecondary"
-                    android:textSize="@dimen/text_size_small"
-                    android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tv_name"
                     android:layout_width="match_parent"
@@ -49,19 +39,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
                 android:layout_marginTop="@dimen/define_dimen_5"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="@dimen/define_dimen_80"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/define_dimen_10"
-                    android:text="@string/phone_number"
-                    android:textColor="@color/textColorSecondary"
-                    android:textSize="@dimen/text_size_small"
-                    android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tv_phone"
                     android:layout_width="match_parent"
@@ -74,19 +54,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
                 android:layout_marginTop="@dimen/define_dimen_5"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
-
-                <TextView
-                    android:layout_width="@dimen/define_dimen_80"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/define_dimen_10"
-                    android:text="@string/address"
-                    android:textColor="@color/textColorSecondary"
-                    android:textSize="@dimen/text_size_small"
-                    android:textStyle="bold" />
-
                 <TextView
                     android:id="@+id/tv_address"
                     android:layout_width="match_parent"
@@ -103,7 +73,27 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
+            android:padding="8dp"
             android:src="@drawable/ic_item_unselect" />
+
+        <ImageView
+            android:id="@+id/img_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/img_status"
+            android:padding="8dp"
+            android:src="@drawable/ic_delete" />
+
+        <ImageView
+            android:id="@+id/img_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/img_delete"
+            android:padding="8dp"
+            android:src="@drawable/ic_edit" />
+
     </RelativeLayout>
 
     <View
