@@ -15,6 +15,8 @@ import com.pro.book.prefs.DataStoreManager
 import com.pro.book.utils.StringUtil.isEmpty
 
 class ChangePasswordActivity : BaseActivity() {
+
+    // Khai báo các view
     private var edtOldPassword: EditText? = null
     private var edtNewPassword: EditText? = null
     private var edtConfirmPassword: EditText? = null
@@ -24,104 +26,143 @@ class ChangePasswordActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_password)
 
-        initToolbar()
-        initUi()
-        initListener()
+        // Gọi hàm khởi tạo
+        setupToolbar()
+        initViews()
+        setListeners()
     }
 
-    private fun initToolbar() {
-        val imgToolbarBack = findViewById<ImageView>(R.id.img_toolbar_back)
-        val tvToolbarTitle = findViewById<TextView>(R.id.tv_toolbar_title)
-        imgToolbarBack.setOnClickListener { finish() }
-        tvToolbarTitle.text = getString(R.string.change_password)
+    /**
+     * Cấu hình toolbar: nút quay lại và tiêu đề
+     */
+    private fun setupToolbar() {
+        val imgBack = findViewById<ImageView>(R.id.img_toolbar_back)
+        val tvTitle = findViewById<TextView>(R.id.tv_toolbar_title)
+
+        imgBack.setOnClickListener { finish() }
+        tvTitle.text = getString(R.string.change_password)
     }
 
-    private fun initUi() {
+    /**
+     * Khởi tạo view từ layout
+     */
+    private fun initViews() {
         edtOldPassword = findViewById(R.id.edt_old_password)
         edtNewPassword = findViewById(R.id.edt_new_password)
         edtConfirmPassword = findViewById(R.id.edt_confirm_password)
         btnChangePassword = findViewById(R.id.btn_change_password)
     }
 
-    private fun initListener() {
-        edtOldPassword!!.addTextChangedListener(object : TextWatcher {
+    /**
+     * Lắng nghe sự kiện nhập liệu và nút bấm
+     */
+    private fun setListeners() {
+        // Khi nhập mật khẩu cũ
+        edtOldPassword?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                if (!isEmpty(s.toString())) {
-                    edtOldPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_main)
-                } else {
-                    edtOldPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_gray)
-                }
+                val res = if (!isEmpty(s.toString()))
+                    R.drawable.bg_white_corner_16_border_main
+                else
+                    R.drawable.bg_white_corner_16_border_gray
+
+                edtOldPassword?.setBackgroundResource(res)
             }
         })
-        edtNewPassword!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
+        // Khi nhập mật khẩu mới
+        edtNewPassword?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                if (!isEmpty(s.toString())) {
-                    edtNewPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_main)
-                } else {
-                    edtNewPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_gray)
-                }
+                val res = if (!isEmpty(s.toString()))
+                    R.drawable.bg_white_corner_16_border_main
+                else
+                    R.drawable.bg_white_corner_16_border_gray
+
+                edtNewPassword?.setBackgroundResource(res)
             }
         })
-        edtConfirmPassword!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
+        // Khi nhập lại mật khẩu
+        edtConfirmPassword?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                if (!isEmpty(s.toString())) {
-                    edtConfirmPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_main)
-                } else {
-                    edtConfirmPassword!!.setBackgroundResource(R.drawable.bg_white_corner_16_border_gray)
-                }
+                val res = if (!isEmpty(s.toString()))
+                    R.drawable.bg_white_corner_16_border_main
+                else
+                    R.drawable.bg_white_corner_16_border_gray
+
+                edtConfirmPassword?.setBackgroundResource(res)
             }
         })
 
-        btnChangePassword!!.setOnClickListener { onClickValidateChangePassword() }
-    }
-
-    private fun onClickValidateChangePassword() {
-        val strOldPassword = edtOldPassword!!.text.toString().trim { it <= ' ' }
-        val strNewPassword = edtNewPassword!!.text.toString().trim { it <= ' ' }
-        val strConfirmPassword = edtConfirmPassword!!.text.toString().trim { it <= ' ' }
-        if (isEmpty(strOldPassword)) {
-            showToastMessage(getString(R.string.msg_old_password_require))
-        } else if (isEmpty(strNewPassword)) {
-            showToastMessage(getString(R.string.msg_new_password_require))
-        } else if (isEmpty(strConfirmPassword)) {
-            showToastMessage(getString(R.string.msg_confirm_password_require))
-        } else if (!DataStoreManager.user?.password.equals(strOldPassword)) {
-            showToastMessage(getString(R.string.msg_old_password_invalid))
-        } else if (strNewPassword != strConfirmPassword) {
-            showToastMessage(getString(R.string.msg_confirm_password_invalid))
-        } else if (strOldPassword == strNewPassword) {
-            showToastMessage(getString(R.string.msg_new_password_invalid))
-        } else {
-            changePassword(strNewPassword)
+        // Khi nhấn nút "Đổi mật khẩu"
+        btnChangePassword?.setOnClickListener {
+            validateChangePassword()
         }
     }
 
+    /**
+     * Kiểm tra dữ liệu nhập hợp lệ trước khi đổi mật khẩu
+     */
+    private fun validateChangePassword() {
+        val oldPass = edtOldPassword?.text.toString().trim()
+        val newPass = edtNewPassword?.text.toString().trim()
+        val confirmPass = edtConfirmPassword?.text.toString().trim()
+
+        when {
+            isEmpty(oldPass) ->
+                showToastMessage(getString(R.string.msg_old_password_require))
+
+            isEmpty(newPass) ->
+                showToastMessage(getString(R.string.msg_new_password_require))
+
+            isEmpty(confirmPass) ->
+                showToastMessage(getString(R.string.msg_confirm_password_require))
+
+            !DataStoreManager.user?.password.equals(oldPass) ->
+                showToastMessage(getString(R.string.msg_old_password_invalid))
+
+            newPass != confirmPass ->
+                showToastMessage(getString(R.string.msg_confirm_password_invalid))
+
+            oldPass == newPass ->
+                showToastMessage(getString(R.string.msg_new_password_invalid))
+
+            else ->
+                changePassword(newPass)
+        }
+    }
+
+    /**
+     * Gọi Firebase để cập nhật mật khẩu mới
+     */
     private fun changePassword(newPassword: String) {
         showProgressDialog(true)
+
         val user = FirebaseAuth.getInstance().currentUser ?: return
         user.updatePassword(newPassword)
             .addOnCompleteListener { task: Task<Void?> ->
                 showProgressDialog(false)
+
                 if (task.isSuccessful) {
                     showToastMessage(getString(R.string.msg_change_password_successfully))
+
+                    // Cập nhật lại password trong local DataStore
                     val userLogin: User = DataStoreManager.user!!
                     userLogin.password = newPassword
                     DataStoreManager.user = userLogin
-                    edtOldPassword!!.setText("")
-                    edtNewPassword!!.setText("")
-                    edtConfirmPassword!!.setText("")
+
+                    // Xóa nội dung các ô nhập
+                    edtOldPassword?.setText("")
+                    edtNewPassword?.setText("")
+                    edtConfirmPassword?.setText("")
                 }
             }
     }
