@@ -13,6 +13,7 @@ import com.pro.book.R
 import com.pro.book.model.User
 import com.pro.book.prefs.DataStoreManager
 import com.pro.book.utils.StringUtil.isEmpty
+import android.content.Intent
 
 class ChangePasswordActivity : BaseActivity() {
     private var edtOldPassword: EditText? = null
@@ -120,30 +121,32 @@ class ChangePasswordActivity : BaseActivity() {
             return
         }
 
-        // Tạo credential từ email + old password
         val credential = com.google.firebase.auth.EmailAuthProvider
             .getCredential(user.email!!, oldPassword)
 
-        // Bước 1: re-authenticate
+        // Bước 1: Re-authenticate
         user.reauthenticate(credential)
             .addOnCompleteListener { reAuthTask ->
                 if (reAuthTask.isSuccessful) {
-                    // Bước 2: update password
+                    // Bước 2: Update password
                     user.updatePassword(newPassword)
                         .addOnCompleteListener { updateTask ->
                             showProgressDialog(false)
                             if (updateTask.isSuccessful) {
+                                // MẬT KHẨU ĐÃ ĐỔI THÀNH CÔNG - BẮT ĐẦU ĐĂNG XUẤT
                                 showToastMessage(getString(R.string.msg_change_password_successfully))
 
-                                // Cập nhật lại user trong DataStore
-                                val userLogin: User = DataStoreManager.user!!
-                                userLogin.password = newPassword
-                                DataStoreManager.user = userLogin
+                                // 1. Đăng xuất khỏi Firebase
+                                FirebaseAuth.getInstance().signOut()
 
-                                // Xóa text cũ
-                                edtOldPassword!!.setText("")
-                                edtNewPassword!!.setText("")
-                                edtConfirmPassword!!.setText("")
+                                // 2. Xóa dữ liệu người dùng đã lưu trong DataStore
+                                DataStoreManager.user = null
+
+                                // 3. Chuyển về màn hình Login và xóa hết các màn hình cũ
+                                val intent = Intent(this@ChangePasswordActivity, LoginActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                startActivity(intent)
+                                finish() // Đóng màn hình ChangePasswordActivity
                             } else {
                                 showToastMessage(updateTask.exception?.localizedMessage
                                     ?: getString(R.string.msg_change_password_failed))
