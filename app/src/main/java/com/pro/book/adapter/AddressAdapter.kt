@@ -15,8 +15,12 @@ class AddressAdapter(
     private val listAddress: List<Address>?,
     private val iClickAddressListener: IClickAddressListener
 ) : RecyclerView.Adapter<AddressViewHolder>() {
+
+    // Thay đổi: Thêm 2 hàm mới vào interface
     interface IClickAddressListener {
         fun onClickAddressItem(address: Address)
+        fun onClickEditAddress(address: Address)
+        fun onClickDeleteAddress(address: Address)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddressViewHolder {
@@ -30,31 +34,41 @@ class AddressAdapter(
         holder.tvName.text = address.name
         holder.tvPhone.text = address.phone
         holder.tvAddress.text = address.address
+
         if (address.isSelected) {
             holder.imgStatus.setImageResource(R.drawable.ic_item_selected)
         } else {
             holder.imgStatus.setImageResource(R.drawable.ic_item_unselect)
         }
 
+        // Sự kiện chọn địa chỉ (để quay về giỏ hàng)
         holder.layoutItem.setOnClickListener {
-            iClickAddressListener.onClickAddressItem(
-                address
-            )
+            iClickAddressListener.onClickAddressItem(address)
+        }
+
+        // Thêm vào: Gán sự kiện cho nút sửa
+        holder.imgEdit.setOnClickListener {
+            iClickAddressListener.onClickEditAddress(address)
+        }
+
+        // Thêm vào: Gán sự kiện cho nút xóa
+        holder.imgDelete.setOnClickListener {
+            iClickAddressListener.onClickDeleteAddress(address)
         }
     }
 
     override fun getItemCount(): Int {
-        if (listAddress != null) {
-            return listAddress.size
-        }
-        return 0
+        return listAddress?.size ?: 0
     }
 
+    // Thêm vào: Khai báo ImageView cho nút sửa và xóa
     class AddressViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val layoutItem: LinearLayout = itemView.findViewById(R.id.layout_item)
         val imgStatus: ImageView = itemView.findViewById(R.id.img_status)
         val tvName: TextView = itemView.findViewById(R.id.tv_name)
         val tvPhone: TextView = itemView.findViewById(R.id.tv_phone)
         val tvAddress: TextView = itemView.findViewById(R.id.tv_address)
-        val layoutItem: LinearLayout = itemView.findViewById(R.id.layout_item)
+        val imgEdit: ImageView = itemView.findViewById(R.id.img_edit)
+        val imgDelete: ImageView = itemView.findViewById(R.id.img_delete)
     }
 }
