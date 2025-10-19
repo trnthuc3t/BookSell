@@ -120,7 +120,6 @@
                     android:layout_centerVertical="true" />
 
                 <LinearLayout
-                    android:id="@+id/layout_action"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -128,20 +127,52 @@
                     android:layout_alignParentEnd="true"
                     android:gravity="center">
 
-                    <TextView
-                        android:id="@+id/tv_action"
+                    <LinearLayout
+                        android:id="@+id/layout_cancel_action"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/app_name"
-                        android:textColor="@color/textColorPrimary"
-                        android:textSize="@dimen/text_size_small"
-                        android:textStyle="bold"/>
+                        android:orientation="horizontal"
+                        android:layout_marginEnd="@dimen/define_dimen_10"
+                        android:background="@drawable/bg_white_corner_6_border_red"
+                        android:paddingTop="@dimen/define_dimen_4"
+                        android:paddingBottom="@dimen/define_dimen_4"
+                        android:paddingStart="@dimen/define_dimen_8"
+                        android:paddingEnd="@dimen/define_dimen_8"
+                        android:gravity="center"
+                        android:visibility="gone">
 
-                    <ImageView
+                        <TextView
+                            android:id="@+id/tv_cancel_action"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hủy đơn"
+                            android:textColor="@color/red"
+                            android:textSize="@dimen/text_size_xsmall"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layout_action"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/define_dimen_10"
-                        android:src="@drawable/ic_next_right"/>
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tv_action"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/app_name"
+                            android:textColor="@color/textColorPrimary"
+                            android:textSize="@dimen/text_size_small"
+                            android:textStyle="bold"/>
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/define_dimen_10"
+                            android:src="@drawable/ic_next_right"/>
+                    </LinearLayout>
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>

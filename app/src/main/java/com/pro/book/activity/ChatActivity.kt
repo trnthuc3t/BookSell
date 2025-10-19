@@ -418,6 +418,7 @@ class ChatActivity : BaseActivity() {
             Order.STATUS_DOING -> "Đang xử lý"
             Order.STATUS_ARRIVED -> "Đã giao"
             Order.STATUS_COMPLETE -> "Hoàn thành"
+            Order.STATUS_CANCELLED -> "Đã hủy"
             else -> "Không rõ"
         }
     }
@@ -600,6 +601,10 @@ HƯỚNG DẪN:
   • Khi người dùng nói "đặt hàng", "tạo đơn", "mua sách"
   • Hướng dẫn từng bước: họ tên, SĐT, chọn sách, số lượng, voucher
   • Tạo đơn hàng với phương thức thanh toán tiền mặt
+- CÓ THỂ HỦY ĐƠN HÀNG (CHỈ ADMIN):
+  • Chỉ hủy được đơn hàng ở trạng thái "Mới" (giai đoạn 1)
+  • Không hủy được đơn hàng thanh toán bằng ZaloPay
+  • Các phương thức khác: tiền mặt, GoPay, thẻ tín dụng, chuyển khoản có thể hủy
 - Nếu không có thông tin, thừa nhận lịch sự
 
 Câu hỏi: $userMessage

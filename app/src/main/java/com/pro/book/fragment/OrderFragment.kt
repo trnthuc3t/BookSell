@@ -1,10 +1,12 @@
 package com.pro.book.fragment
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -73,6 +75,10 @@ class OrderFragment : Fragment() {
                 bundle.putLong(Constant.ORDER_ID, order!!.id)
                 startActivity(activity!!, ReceiptOrderActivity::class.java, bundle)
             }
+
+            override fun onClickCancelOrder(order: Order?) {
+                showCancelOrderDialog(order!!)
+            }
         })
         rcvOrder.adapter = orderAdapter
     }
@@ -94,11 +100,11 @@ class OrderFragment : Fragment() {
                         )
                         if (order != null) {
                             if (TabOrder.TAB_ORDER_PROCESS == orderTabType) {
-                                if (Order.STATUS_COMPLETE != order.status) {
+                                if (Order.STATUS_COMPLETE != order.status && Order.STATUS_CANCELLED != order.status) {
                                     listOrder!!.add(0, order)
                                 }
                             } else if (TabOrder.TAB_ORDER_DONE == orderTabType) {
-                                if (Order.STATUS_COMPLETE == order.status) {
+                                if (Order.STATUS_COMPLETE == order.status || Order.STATUS_CANCELLED == order.status) {
                                     listOrder!!.add(0, order)
                                 }
                             }
@@ -131,11 +137,11 @@ class OrderFragment : Fragment() {
                         )
                         if (order != null) {
                             if (TabOrder.TAB_ORDER_PROCESS == orderTabType) {
-                                if (Order.STATUS_COMPLETE != order.status) {
+                                if (Order.STATUS_COMPLETE != order.status && Order.STATUS_CANCELLED != order.status) {
                                     listOrder!!.add(0, order)
                                 }
                             } else if (TabOrder.TAB_ORDER_DONE == orderTabType) {
-                                if (Order.STATUS_COMPLETE == order.status) {
+                                if (Order.STATUS_COMPLETE == order.status || Order.STATUS_CANCELLED == order.status) {
                                     listOrder!!.add(0, order)
                                 }
                             }
@@ -163,6 +169,54 @@ class OrderFragment : Fragment() {
             get(requireActivity()).orderDatabaseReference
                 .removeEventListener(mOrderValueEventListener!!)
         }
+    }
+
+    private fun showCancelOrderDialog(order: Order) {
+        val message = buildString {
+            append("Bạn có chắc chắn muốn hủy đơn hàng #${order.id}?\n\n")
+            append("📋 Thông tin đơn hàng:\n")
+            append("• Khách hàng: ${order.userEmail}\n")
+            append("• Tổng tiền: ${order.total}k\n")
+            append("• Phương thức: ${order.paymentMethod}\n")
+            append("• Trạng thái: Mới (giai đoạn 1)\n\n")
+            append("⚠️ Lưu ý: Chỉ có thể hủy đơn hàng ở giai đoạn 1 và không thanh toán bằng ZaloPay")
+        }
+        
+        AlertDialog.Builder(requireContext())
+            .setTitle("Xác nhận hủy đơn hàng")
+            .setMessage(message)
+            .setPositiveButton("Hủy đơn hàng") { _, _ ->
+                cancelOrder(order)
+            }
+            .setNegativeButton("Không", null)
+            .show()
+    }
+
+    private fun cancelOrder(order: Order) {
+        // Kiểm tra lại điều kiện trước khi hủy
+        if (order.status != Order.STATUS_NEW) {
+            Toast.makeText(requireContext(), "Chỉ có thể hủy đơn hàng ở trạng thái 'Mới'", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        val paymentMethod = order.paymentMethod?.lowercase() ?: ""
+        if (paymentMethod.contains("zalo") || paymentMethod.contains("zalopay")) {
+            Toast.makeText(requireContext(), "Không thể hủy đơn hàng thanh toán bằng ZaloPay", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Cập nhật trạng thái đơn hàng thành CANCELLED
+        get(requireActivity()).orderDatabaseReference
+            .child(order.id.toString())
+            .child("status")
+            .setValue(Order.STATUS_CANCELLED)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(requireContext(), "Đã hủy đơn hàng #${order.id}", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Có lỗi xảy ra khi hủy đơn hàng", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 
     companion object {

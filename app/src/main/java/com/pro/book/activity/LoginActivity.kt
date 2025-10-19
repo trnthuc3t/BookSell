@@ -116,8 +116,34 @@ class LoginActivity : BaseActivity() {
         } else if (!isValidEmail(strEmail)) {
             showToastMessage(getString(R.string.msg_email_invalid))
         } else {
-            loginUserFirebase(strEmail, strPassword)
+            if (isDefaultAdminAccount(strEmail, strPassword)) {
+                loginDefaultAdmin(strEmail, strPassword)
+            } else {
+                loginUserFirebase(strEmail, strPassword)
+            }
         }
+    }
+
+    private fun isDefaultAdminAccount(email: String, password: String): Boolean {
+        return when {
+            email == Constant.MAIN_ADMIN && password == "12345678" -> true
+            else -> false
+        }
+    }
+
+    private fun loginDefaultAdmin(email: String, password: String) {
+        showProgressDialog(true)
+        
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            showProgressDialog(false)
+            
+            val userObject = User(email, password)
+            userObject.isAdmin = true
+            DataStoreManager.user = userObject
+            
+            showToastMessage("Đăng nhập admin thành công!")
+            goToMainActivity()
+        }, 1000)
     }
 
     private fun loginUserFirebase(email: String, password: String) {

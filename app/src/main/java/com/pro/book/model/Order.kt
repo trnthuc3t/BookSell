@@ -48,5 +48,6 @@ class Order : Serializable {
         const val STATUS_DOING: Int = 2
         const val STATUS_ARRIVED: Int = 3
         const val STATUS_COMPLETE: Int = 4
+        const val STATUS_CANCELLED: Int = 5
     }
 }
