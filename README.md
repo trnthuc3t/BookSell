@@ -34,7 +34,10 @@ https://drive.google.com/drive/folders/15wA8xk61Re6LOj5KF013FvTt66XN3ycT?fbclid=
 ## How to set up dependencies
 - Download zalopay sdk: https://developer.zalopay.vn/downloads/zpdk/zpdk-release-v3.1.aar
 - import file .aar into android studio
-- add apiKey gemini in ChatActivity.kt
+- add apiKey gemini in local.properties
+```
+    geminiApiKey ="your_api_key_here"
+```
 - check dependencies in build.gradle (Module: app)
 ```
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
