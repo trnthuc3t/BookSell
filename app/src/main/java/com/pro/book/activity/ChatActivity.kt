@@ -21,7 +21,6 @@ import com.pro.book.model.Message
 import com.pro.book.model.Order
 import com.pro.book.model.Product
 import com.pro.book.model.ProductOrder
-import com.pro.book.model.Rating
 import com.pro.book.prefs.DataStoreManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,8 +32,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.*
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 class ChatActivity : BaseActivity() {
@@ -52,7 +50,17 @@ class ChatActivity : BaseActivity() {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    private val geminiApiKey = "AIzaSyC93XMt2CYqdTBFToffkzz_pZfb5EQayMU"
+    val geminiApiKey: String
+        get() {
+            val properties = java.util.Properties()
+            val file = File("${System.getProperty("user.dir")}/local.properties")
+            if (file.exists()) {
+                properties.load(file.inputStream())
+                return properties.getProperty("GEMINI_API_KEY", "")
+            }
+            return ""
+        }
+
 
     // Enhanced data storage
     private var productData = StringBuilder()
@@ -66,7 +74,7 @@ class ChatActivity : BaseActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private val chatHistoryKey = "chat_history_${DataStoreManager.user?.email}"
     
-    // Data analysis
+    // Data analysisk
     private val productSalesMap = mutableMapOf<Long, Int>()
     private val productRatingMap = mutableMapOf<Long, Double>()
     private val categoryStats = mutableMapOf<String, Int>()
